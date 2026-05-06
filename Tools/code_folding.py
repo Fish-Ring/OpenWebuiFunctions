@@ -86,6 +86,7 @@ class Filter:
             escaped = self._escape_html(code)
 
             return (
+                f'\n```html\n'
                 f'<details class="owui-code-fold" style="margin:8px 0;">\n'
                 f'<summary style="cursor:pointer;padding:8px 14px;background:var(--code-bg,#f4f4f4);border:1px solid var(--border-color,#e0e0e0);border-radius:6px;font-family:monospace;font-size:0.85em;user-select:none;">\n'
                 f'  <strong>{lang_label}</strong> \u2014 {total} lines'
@@ -93,7 +94,8 @@ class Filter:
                 f'  <span style="float:right;color:#888;">\u25bc</span>\n'
                 f'</summary>\n'
                 f'<pre style="margin:0;border:1px solid var(--border-color,#e0e0e0);border-top:none;border-radius:0 0 6px 6px;padding:12px;overflow-x:auto;background:var(--code-bg,#f4f4f4);"><code class="language-{lang}">{escaped}</code></pre>\n'
-                f'</details>'
+                f'</details>\n'
+                f'```\n'
             )
 
         return pattern.sub(replacer, content)
