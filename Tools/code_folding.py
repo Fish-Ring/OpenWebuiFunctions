@@ -1,11 +1,12 @@
 """
 title: Code Folding
 icon_url: data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xOCAxNWwtNi02LTYgNiIvPjwvc3ZnPg==
-version: 0.1.0
+version: 0.2.0
 description: Automatically folds long code blocks in chat responses with a click-to-expand UI.
 """
 
 import re
+import asyncio
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
 
@@ -58,11 +59,12 @@ class Filter:
     def __init__(self):
         self.valves = self.Valves()
 
-    def _escape_html(self, text: str) -> str:
+    @staticmethod
+    def _escape_html(text: str) -> str:
         return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
-    def _fold_code_blocks(self, content: str) -> str:
-        pattern = re.compile(r"```(\w*)\n(.*?)```", re.DOTALL)
+    def _fold_text(self, content: str) -> str:
+        pattern = re.compile(r"```(\S*)\s*\n(.*?)```", re.DOTALL)
 
         def replacer(match):
             lang = match.group(1) or ""
@@ -75,7 +77,8 @@ class Filter:
 
             show = min(self.valves.SHOW_LINES, total)
             preview_lines = lines[:show]
-            preview_text = " | ".join(l.strip()[:60] for l in preview_lines if l.strip())
+            preview_items = [l.strip()[:80] for l in preview_lines if l.strip()]
+            preview_text = " | ".join(preview_items)
             if not preview_text:
                 preview_text = f"{total} lines"
 
@@ -95,26 +98,23 @@ class Filter:
 
         return pattern.sub(replacer, content)
 
-    def outlet(self, body: dict, __user__: Optional[Dict] = None, __event_emitter__: Optional[Any] = None) -> dict:
+    async def outlet(self, body: dict, __user__: Optional[Dict] = None, __event_emitter__: Optional[Any] = None) -> dict:
         messages = body.get("messages", [])
         if not messages:
             return body
 
         folded_count = 0
         for msg in messages:
-            if msg.get("role") == "assistant" and msg.get("content"):
-                new_content = self._fold_code_blocks(msg["content"])
+            if msg.get("role") == "assistant" and isinstance(msg.get("content"), str):
+                new_content = self._fold_text(msg["content"])
                 if new_content != msg["content"]:
                     folded_count += 1
                     msg["content"] = new_content
 
         if folded_count > 0 and __event_emitter__:
-            import asyncio
-            asyncio.ensure_future(
-                __event_emitter__({
-                    "type": "notification",
-                    "data": {"type": "info", "content": f"Folded {folded_count} long code block(s). | 已折叠 {folded_count} 个长代码块。"}
-                })
-            )
+            await __event_emitter__({
+                "type": "notification",
+                "data": {"type": "info", "content": f"Folded {folded_count} long code block(s). | 已折叠 {folded_count} 个长代码块。"}
+            })
 
         return body
