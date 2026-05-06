@@ -15,3 +15,11 @@ Analyzes text → interactive SVG mind map (Markmap.js). Bilingual UI (configura
 | `MIN_TEXT_LENGTH` | 100 | Min chars to analyze |
 | `CLEAR_PREVIOUS_HTML` | false | Overwrite vs merge |
 | `LANGUAGE` | zh-CN | 中文 / English |
+
+### Code Folding `Tools/code_folding.py`
+
+Filter (outlet). Auto-folds code blocks exceeding `MAX_LINES` into click-to-expand details.
+
+| Valve | Default | Description |
+|---|---|---|
+| `MAX_LINES` | 30 | Auto-fold blocks over this count |
