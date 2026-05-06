@@ -23,3 +23,20 @@ Analyzes text content and generates interactive mind maps using Markmap.js.
 | `MIN_TEXT_LENGTH` | Minimum text length for analysis (default: 100) |
 | `CLEAR_PREVIOUS_HTML` | Overwrite instead of merging multiple results |
 | `LANGUAGE` | Display language: 中文 / English |
+
+### Code Folding (`Tools/code_folding.py`)
+
+A **Filter** plugin that automatically folds long code blocks in assistant responses with a click-to-expand `<details>` UI.
+
+**Features:**
+- Folds code blocks exceeding a configurable line threshold
+- Shows a preview (first N lines) with language label and line count
+- Click to expand the full code block
+- Supports 50+ language labels for display
+- Toggle on/off globally from the Functions panel
+
+**Configuration (Valves):**
+| Field | Default | Description |
+|---|---|---|
+| `MAX_LINES` | 30 | Fold code blocks exceeding this many lines |
+| `SHOW_LINES` | 1 | Lines to show in preview before the fold |
